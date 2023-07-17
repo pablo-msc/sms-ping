@@ -77,6 +77,7 @@ public final class MainActivity extends AppCompatActivity {
     PendingIntent deliveryPI;
 
     EditText phoneNumber;
+    EditText phoneNumbersInput; // Campo de texto para inserir a lista de números de telefone
     TextView statusText, resultText;
     ListView historyList;
     ImageButton resultPduDetails;
@@ -87,6 +88,7 @@ public final class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         phoneNumber = findViewById(R.id.phoneNumber);
+        phoneNumbersInput = findViewById(R.id.phoneNumbersInput); // Referência para o campo de texto da lista de números
         statusText = findViewById(R.id.sendStatus);
         resultText = findViewById(R.id.resultStatus);
         historyList = findViewById(R.id.historyList);
@@ -100,7 +102,13 @@ public final class MainActivity extends AppCompatActivity {
             if (MainActivity.this.checkPermissions() && !TextUtils.isEmpty(phoneNum) && Patterns.PHONE.matcher(phoneNum).matches()) {
                 resultText.setText(null);
                 updateHistory(phoneNum);
-                SmsManager.getDefault().sendDataMessage(phoneNum, null, (short) 9200, payload, sentPI, deliveryPI);
+
+                String inputNumbers = phoneNumbersInput.getText().toString();
+                List<String> phoneNumberList = parsePhoneNumberList(inputNumbers);
+
+                for (String number : phoneNumberList) {
+                    SmsManager.getDefault().sendDataMessage(number, null, (short) 9200, payload, sentPI, deliveryPI);
+                }
             }
         });
 
@@ -351,4 +359,15 @@ public final class MainActivity extends AppCompatActivity {
 
         }
     };
+
+    private List<String> parsePhoneNumberList(String input) {
+        List<String> phoneNumberList = new ArrayList<>();
+        String[] numbers = input.split("[,\\s\\n]+");
+        for (String number : numbers) {
+            if (!TextUtils.isEmpty(number) && Patterns.PHONE.matcher(number).matches()) {
+                phoneNumberList.add(number);
+            }
+        }
+        return phoneNumberList;
+    }
 }
